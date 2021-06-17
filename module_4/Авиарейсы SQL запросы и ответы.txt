@@ -1,0 +1,385 @@
+Изучаем закономерности в данных
+..\\Задание 4.1//..
+
+select 
+     a.city,
+     count(a.airport_name)
+from 
+     dst_project.airports a
+group by 
+     a.city
+order by 
+     2 desc
+limit 
+     5
+
+Ответ: Moscow, Ulyanovsk
+----------------------------
+..\\Задание 4.2//..
+
+---4.2.1---
+
+select 
+     count(distinct f.status)
+from 
+     dst_project.flights f
+
+Ответ:6
+----------------------------
+
+---4.2.2---
+
+select 
+    count(f.status)
+from 
+     dst_project.flights f
+where
+     f.status = 'Departed'
+
+Ответ:58
+-----------------------------
+
+---4.2.3---
+
+select
+     a.model,
+     count(distinct s.seat_no)
+from 
+     dst_project.aircrafts a
+         join dst_project.seats s on a.aircraft_code = s.aircraft_code
+where
+     a.model = 'Boeing 777-300'
+group by
+     a.model
+
+Ответ:402
+------------------------------
+
+---4.2.4---
+
+select 
+     count(flight_id)
+from 
+     dst_project.flights f
+where
+     f.status = 'Arrived' and
+     f.scheduled_arrival >= 'April 1, 2017' 
+     and f.scheduled_arrival <= 'September 1, 2017'
+
+Ответ:74227
+-----------------------------
+..\\Задание 4.3//..
+
+---4.3.1---
+
+select 
+    count(f.status)
+from 
+     dst_project.flights f
+where
+     f.status = 'Cancelled'
+
+Ответ:437
+---------------------------
+
+---4.3.2---
+SQL:
+select 
+     count(ai.model)
+from 
+     dst_project.aircrafts ai
+where
+     ai.model LIKE 'Boeing%'
+
+Ответ: Boeing:3
+
+SQL:
+select 
+     count(ai.model)
+from 
+     dst_project.aircrafts ai
+where
+     ai.model LIKE 'Sukhoi Superjet%'
+
+Ответ: Sukhoi Superjet:1
+
+SQL:
+select 
+     count(ai.model)
+from 
+     dst_project.aircrafts ai
+where
+     ai.model LIKE 'Airbus%'
+
+Ответ: Airbus:3
+-------------------------------
+---4.3.3---
+
+select 
+     a.timezone,
+     count(a.timezone)
+from 
+     dst_project.airports a
+group by
+     a.timezone
+order by
+     2 desc
+
+Ответ: Europe, Asia
+-----------------------------
+---4.3.4---
+
+select 
+     f.flight_id,
+     (actual_arrival - scheduled_arrival) time_f
+from 
+     dst_project.flights f
+where 
+     actual_arrival IS NOT NULL
+order by 
+     (actual_arrival - scheduled_arrival) desc
+
+Ответ: 157571
+------------------------------
+..\\Задание 4.4//..
+
+---4.4.1---
+
+select 
+    min(scheduled_departure)
+from 
+     dst_project.flights f
+
+Ответ: 14.08.2016
+----------------------------
+---4.4.2---
+
+select 
+     max(extract(epoch
+                   from (f.scheduled_arrival - f.scheduled_departure))) / 60 AS duration_minutes
+from 
+     dst_project.flights AS f;
+
+Ответ: 530
+--------------------------
+---4.4.3---
+
+select 
+     departure_airport, 
+     arrival_airport
+from 
+     dst_project.flights
+order by 
+     scheduled_arrival - scheduled_departure desc
+limit 1;
+
+Ответ: DME - UUS
+--------------------------
+---4.4.4---
+
+select 
+     avg(extract(epoch
+                   from (f.scheduled_arrival - f.scheduled_departure))) / 60 AS duration_minutes
+from 
+     dst_project.flights AS f;
+
+Ответ: 128
+---------------------------
+
+..\\Задание 4.5//..
+
+---4.5.1---
+
+select 
+     max(fare_conditions)
+from 
+     dst_project.flights f
+         join dst_project.seats s on f.aircraft_code = s.aircraft_code
+where
+     f.aircraft_code = 'SU9'
+
+Ответ: Economy
+--------------------------
+---4.5.2---
+
+select 
+     min(b.total_amount)
+from 
+     dst_project.bookings b
+
+Ответ: 3400
+--------------------------
+---4.5.3---
+
+select 
+     p.seat_no
+from 
+     dst_project.boarding_passes p
+         join dst_project.tickets t on p.ticket_no = t.ticket_no
+where
+     passenger_id = '4313 788533'
+
+Ответ: 2A
+-------------------------
+
+Предварительный анализ
+..\\Задание 5.1//..
+
+---5.1.1---
+
+select 
+     count(*)
+from
+     dst_project.airports ai
+     join dst_project.flights f ON ai.airport_code = f.arrival_airport
+where 
+     ai.city = 'Anapa'
+     and f.status = 'Arrived'
+     and (date_part('year', f.actual_arrival) = 2017)
+
+Ответ:486
+---------------------------
+---5.1.2---
+
+select
+    f.status,
+   count(flight_id)
+from
+    dst_project.flights f
+    left join dst_project.airports ap on f.departure_airport = ap.airport_code
+where (ap.city = 'Anapa')
+  and (date_part('year', actual_departure) = 2017)
+  and (date_part('month', actual_departure) in (12, 1, 2))
+group by 1
+
+Ответ:127
+---------------------------
+----5.1.3---
+select 
+     count(flight_id)
+from 
+     dst_project.flights f
+where
+     departure_airport = 'AAQ'
+     and f.status = 'Cancelled'
+
+Ответ:1 
+---------------------------
+--5.1.4---
+select 
+     count(f.flight_id)
+from 
+     dst_project.airports ai
+     join dst_project.flights f ON ai.airport_code = f.arrival_airport
+where 
+     f.departure_airport = 'AAQ'
+     and ai.city != 'Moscow'
+
+
+Ответ:453
+---------------------------
+
+---5.1.5---
+
+with t1 as 
+    (select  
+        aircraft_code, 
+        count(seat_no) count_seat
+    from 
+        dst_project.seats s
+    group by 
+        aircraft_code)
+select
+    t1.count_seat,
+    ac.model
+from
+    dst_project.flights f
+    join t1 on f.aircraft_code = t1.aircraft_code
+    join dst_project.aircrafts ac on f.aircraft_code = ac.aircraft_code
+where
+    f.departure_airport = 'AAQ'
+group by
+    ac.model,t1.count_seat
+
+
+Ответ:Boeing 737-300
+-------------------------------
+
+
+
+------\\Финальный запрос//------ 
+
+with general_flight_information AS
+  (select fl.*,
+          extract(epoch
+                  from fl.actual_departure - fl.scheduled_departure)/60 AS departure_delay,
+          extract(epoch
+                  from fl.actual_arrival - fl.scheduled_arrival)/60 AS arrival_delay,
+          sum(tik_fl.amount) AS sum_price_tiket,
+          extract(epoch
+                  from fl.actual_arrival - fl.actual_departure)/3600 AS flight_time,
+          case
+              when arcrft.model = 'Boeing 777-300' then 7800/1000. -- тонн топлива в час
+              when arcrft.model = 'Boeing 767-300' then 4800/1000.
+              when arcrft.model = 'Sukhoi Superjet-100' then 1700/1000.
+              when arcrft.model = 'Airbus A320-200' then 2580/1000.
+              when arcrft.model = 'Airbus A321-200' then 3200/1000.
+              when arcrft.model = 'Airbus A319-100' then 2600/1000.
+              when arcrft.model = 'Boeing 737-300' then 2600/1000.
+              when arcrft.model = 'Cessna 208 Caravan' then 180/1000.
+              when arcrft.model = 'Bombardier CRJ-200' then 1100/1000.
+          end AS tons_of_fuel_per_hour,
+          case
+              when extract(month
+                           from fl.scheduled_departure::date) = 1 then 48893-- Январь 2017
+
+              when extract(month
+                           from fl.scheduled_departure::date) = 2 then 46672 -- Февраль 2017
+
+              when extract(month
+                           from fl.scheduled_departure::date) = 12 then 45863 -- Декабрь 2016
+
+          end AS price_per_tons_fuel_per_month
+   from dst_project.flights fl
+   left join dst_project.TICKET_FLIGHTS tik_fl ON fl.flight_id = tik_fl.flight_id
+   left join dst_project.aircrafts arcrft ON fl.aircraft_code = arcrft.aircraft_code
+   where fl.departure_airport = 'AAQ'
+     and (date_trunc('month', fl.scheduled_departure) in ('2017-01-01','2017-02-01', '2017-12-01'))
+     and fl.status not in ('Cancelled')
+   group by fl.flight_id,
+            tons_of_fuel_per_hour)
+select gfi.flight_id, 	            				-- Идентификатор рейса
+       gfi.flight_no, 				            	-- Номер рейса
+       gfi.scheduled_departure, 	        		-- Запланированное время отправления
+       gfi.scheduled_arrival,		        		-- Запланированное время прибытия
+       gfi.departure_airport,		        		-- Аэропорт отправления
+       departure_airprts.city AS departure_city,	        -- Город отправления
+       gfi.arrival_airport,		            		-- Аэропорт прибытия
+       arrival_airprts.city AS arrival_city,		        -- Город прибытия
+       gfi.actual_departure,		        		-- Фактическое время отправления
+       gfi.actual_arrival,			            	-- Фактическое время отправления
+       gfi.departure_delay,		            		-- Время задержки отправления
+       gfi.arrival_delay,		            		-- Время задержки прибытия
+       gfi.sum_price_tiket,			            	-- Сумма билетов
+       gfi.flight_time,			            		-- Фактическое время в пути
+       gfi.tons_of_fuel_per_hour,		        	-- Расход топлива (тонн/час)
+       gfi.price_per_tons_fuel_per_month,	    	        -- Цена тонны топлива в месяц вылета
+/* 
+Далее считается 
+
+	сosts_per_hour -- Расход в денежном выражении в час
+	profit_flight  -- Прибыль рейса (Сумма билетов -  время    полёта * расход топлива * цену топлива)
+
+*/
+       gfi.tons_of_fuel_per_hour * gfi.price_per_tons_fuel_per_month * gfi.flight_time AS сosts_per_hour, --  Расход в денежном выражении в час
+       coalesce(gfi.sum_price_tiket, 0) - (gfi.flight_time * gfi.tons_of_fuel_per_hour * gfi.price_per_tons_fuel_per_month) AS profit_flight
+from general_flight_information gfi
+left join dst_project.airports departure_airprts ON gfi.departure_airport = departure_airprts.airport_code
+left join dst_project.airports arrival_airprts ON gfi.arrival_airport = arrival_airprts.airport_code
+
+/* 
+
+Стоимость топлива взята офф. сайта(с учетом НДС) топливной компании Анапы
+Расход топлива взят из разных официальных источников.
+
+*/
