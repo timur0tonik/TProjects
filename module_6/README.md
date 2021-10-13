@@ -47,3 +47,6 @@
 + 'Состояние' - требует или нет текущего ремонта
 + 'Таможня' - растаможен или нет
 
+
+Подробный чек лист: https://docs.google.com/spreadsheets/d/1l4aZ0BUmqjmuSw63srm9iLPZFXFMfrRtF8CjW9XMQ58/edit?usp=sharing
+
