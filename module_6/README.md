@@ -1,4 +1,4 @@
-# unit_6
+﻿# unit_6
 # Выбираем авто выгодно
 
 ## Описание проекта
@@ -47,6 +47,7 @@
 + 'Состояние' - требует или нет текущего ремонта
 + 'Таможня' - растаможен или нет
 
+kaggle: https://www.kaggle.com/timur0k/timur-k-sf-dst-car-price-prediction
 
 Подробный чек лист: https://docs.google.com/spreadsheets/d/1l4aZ0BUmqjmuSw63srm9iLPZFXFMfrRtF8CjW9XMQ58/edit?usp=sharing
 
